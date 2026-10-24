@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<link rel="manifest" href="./manifest.json">
+<link rel="icon" href="./icon.svg" type="image/svg+xml">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="家庭美食厨房">
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#fff6ed"><title>家庭美食厨房</title>
+<style>
+:root{--bg:#fffaf5;--ink:#3d302a;--muted:#85766e;--accent:#b96745;--soft:#f5e1d3;--line:#f0e2d8}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,"Noto Sans SC",sans-serif}
+header{padding:22px 18px;background:linear-gradient(135deg,#ffe9d9,#fff8ef);border-bottom:1px solid var(--line)}h1{margin:0 0 5px;font-size:26px}header p{margin:0;color:var(--muted);font-size:14px}
+main{max-width:1100px;margin:auto;padding:16px;display:grid;gap:16px}.panel{background:white;border:1px solid var(--line);border-radius:18px;padding:16px;box-shadow:0 3px 12px #6b41200a}
+h2{font-size:18px;margin:0 0 12px}h3{font-size:15px;margin:10px 0 6px}.categories{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.cat,.recipe{border:1px solid var(--line);background:#fffaf6;border-radius:12px;padding:12px 7px;color:var(--ink);cursor:pointer;font:inherit}.cat{font-size:14px;font-weight:650}.cat.active,.recipe.active{background:var(--soft);border-color:#d5a48c}
+.recipes{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:12px}.recipe{text-align:left;font-size:14px}.recipe small{display:block;color:var(--muted);margin-top:4px}
+label{display:block;font-size:13px;color:var(--muted);margin:10px 0 5px}input,select,textarea{width:100%;padding:11px 12px;border:1px solid #e5d6cc;border-radius:10px;background:#fffdfa;color:var(--ink);font:inherit}textarea{min-height:72px;resize:vertical}
+.formgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}button.primary,button.secondary,button.danger{border:0;border-radius:11px;padding:12px 14px;font:inherit;font-weight:650;cursor:pointer}button.primary{background:var(--accent);color:white;width:100%;margin-top:14px}button.secondary{background:var(--soft);color:#6b3c28}button.danger{background:#fff0ed;color:#9d3b2f}
+.note{font-size:12px;color:var(--muted);line-height:1.5}.result{background:#fff9f3;border:1px dashed #dfbca7;border-radius:12px;padding:12px;margin-top:12px;white-space:pre-wrap;line-height:1.6;font-size:14px}
+.actual-row{display:grid;grid-template-columns:1fr 1.2fr auto;gap:8px;align-items:center;margin:8px 0}.actual-row span{font-size:13px}.actual-row input{padding:8px}.actual-row em{font-size:12px;color:var(--muted);font-style:normal}
+.history-item{border-bottom:1px solid var(--line);padding:12px 0}.history-item:last-child{border-bottom:0}.history-item p{margin:5px 0;color:var(--muted);font-size:12px;white-space:pre-wrap;line-height:1.5}.badge{display:inline-block;background:#f8eee6;border-radius:99px;padding:4px 8px;font-size:12px;color:#8a563d}
+@media(min-width:800px){main{grid-template-columns:1fr 1fr}.wide{grid-column:1/-1}.categories{grid-template-columns:repeat(4,1fr)}.recipes{grid-template-columns:repeat(3,1fr)}}
+</style></head>
+<body>
+<header><h1>🍰 家庭美食厨房</h1><p>家人一起选食谱 · 调整口味 · 记录每次实际用料</p></header>
+<main>
+<section class="panel"><h2>① 选择食物类别</h2><div id="categories" class="categories"></div><div id="recipes" class="recipes"></div><p class="note">先选类别，再选一道食谱。也可以在下方添加自己家的食谱。</p></section>
+<section class="panel"><h2>② 份量与口味</h2><div id="selectedName" class="badge">还没选择食谱</div>
+<div class="formgrid"><div><label for="servings">想做几份 / 几个</label><input id="servings" type="number" min="1" max="100" value="4"></div>
+<div><label for="sweet">甜度</label><select id="sweet"><option>无糖</option><option>少甜</option><option selected>正常甜</option><option>多甜</option></select></div>
+<div><label for="milk">奶量</label><select id="milk"><option>不加奶</option><option>少奶</option><option selected>正常奶</option><option>多奶</option></select></div>
+<div><label for="salt">咸度</label><select id="salt"><option>少盐</option><option selected>正常</option><option>多盐</option></select></div>
+<div><label for="spice">辣度</label><select id="spice"><option>不辣</option><option selected>微辣</option><option>中辣</option><option>特辣</option></select></div>
+<div><label for="temp">温度 / 做法</label><select id="temp"><option>热</option><option>冰</option><option>常温</option><option>烤</option><option>蒸</option><option>煎</option><option>煮</option></select></div></div>
+<label for="custom">特别要求</label><textarea id="custom" placeholder="例如：Milo 车的味道、少炼奶、不要花生、家人的口味……"></textarea>
+<button class="primary" id="makeBtn">计算建议用量与步骤</button><div id="result" class="result">选择食谱后，这里会显示建议材料、用量和步骤。</div>
+<div id="actualIngredients" class="result" style="display:none"><h3>本次实际使用量</h3><p class="note">把下面数字改成你真正使用的数量。保存历史记录时，会连同实际用量一起保存。</p><div id="actualInputs"></div></div>
+<button class="secondary" id="saveBtn" style="width:100%;margin-top:10px">保存本次制作记录</button>
+<p class="note">当前是离线演示版，并未连接真正 AI。材料建议请按可靠食谱核对，特别是烘焙比例和食物是否熟透。</p></section>
+<section class="panel"><h2>③ 添加自家食谱</h2>
+<label for="newCategory">类别</label><select id="newCategory"><option>烘焙类</option><option>饭类</option><option>面类</option><option>汤类</option><option>饮料类</option><option>饺子类</option><option>小吃类</option><option>其他</option></select>
+<label for="newName">食谱名称</label><input id="newName" placeholder="例如：妈妈的小蛋糕">
+<label for="newBase">基础份量</label><input id="newBase" type="number" min="1" value="4">
+<label for="newIngredients">材料（每行格式：名称|数量|单位）</label><textarea id="newIngredients" placeholder="面粉|120|克&#10;鸡蛋|2|个&#10;牛奶|80|毫升"></textarea>
+<label for="newSteps">制作步骤</label><textarea id="newSteps" placeholder="1. 准备材料……&#10;2. 混合并制作……"></textarea><button class="primary" id="addRecipeBtn">添加我的食谱</button>
+<p class="note">例：鸡蛋|2|个。新增食谱保存在当前设备的浏览器中。</p></section>
+<section class="panel"><h2>④ 历史记录：每次制作都单独保存</h2><div id="history"><p class="note">还没有记录。选择食谱、生成用量、修改实际用料，再点「保存本次制作记录」。</p></div>
+<div style="display:flex;gap:8px;flex-wrap:wrap"><button class="secondary" id="exportBtn">备份数据</button><button class="secondary" id="importBtn">导入备份</button><button class="danger" id="clearHistoryBtn">清空历史</button></div><input id="importFile" type="file" accept="application/json" style="display:none"><p class="note">历史记录会保留每次的日期、份量、口味、备注和实际材料用量。建议定期备份，清除浏览器数据可能会删除记录。</p></section>
+</main>
+<script>
+const baseRecipes=[
+{category:"烘焙类",name:"基础小蛋糕",base:4,ingredients:[["面粉",120,"克"],["鸡蛋",2,"个"],["牛奶",60,"毫升"],["糖",50,"克"],["融化黄油",40,"克"],["泡打粉",4,"克"]],steps:"1. 预热烤箱至约170°C。\\n2. 将鸡蛋和糖搅拌均匀。\\n3. 加入牛奶和融化黄油，再加入面粉与泡打粉。\\n4. 倒入模具，烘烤约15–20分钟；用牙签确认熟透。"},
+{category:"烘焙类",name:"巧克力布朗尼",base:6,ingredients:[["黑巧克力",120,"克"],["黄油",80,"克"],["鸡蛋",2,"个"],["糖",70,"克"],["面粉",55,"克"]],steps:"1. 融化巧克力和黄油。\\n2. 加入鸡蛋和糖搅匀。\\n3. 拌入面粉。\\n4. 倒入模具，约170°C烘烤20–25分钟，确认熟透。"},
+{category:"烘焙类",name:"简单饼干",base:20,ingredients:[["面粉",150,"克"],["黄油",80,"克"],["糖",45,"克"],["鸡蛋",1,"个"]],steps:"1. 将软化黄油和糖拌匀。\\n2. 加入鸡蛋，再拌入面粉。\\n3. 整形成小块，约170°C烘烤12–15分钟，观察上色情况。"},
+{category:"饭类",name:"鸡肉饭",base:2,ingredients:[["米",300,"克"],["鸡肉",300,"克"],["蒜",2,"瓣"],["姜",10,"克"],["盐",3,"克"],["水或高汤","适量",""],["青菜","适量",""]],steps:"1. 洗米并准备鸡肉。\\n2. 用姜蒜调味鸡肉。\\n3. 米与适量水或高汤煮熟，鸡肉必须彻底煮熟。\\n4. 配青菜一起上桌。"},
+{category:"饭类",name:"蛋炒饭",base:2,ingredients:[["熟饭",400,"克"],["鸡蛋",2,"个"],["青葱",10,"克"],["食用油",15,"毫升"],["酱油",15,"毫升"]],steps:"1. 鸡蛋打散，青葱切好。\\n2. 热锅加油，先炒蛋。\\n3. 加入熟饭炒散，再加酱油和青葱。\\n4. 炒至热透后食用。"},
+{category:"面类",name:"家常炒面",base:2,ingredients:[["面条",300,"克"],["鸡蛋",2,"个"],["青菜",150,"克"],["酱油",20,"毫升"],["蒜",2,"瓣"],["食用油",15,"毫升"]],steps:"1. 按包装说明煮好面条并沥干。\\n2. 炒香蒜，加入鸡蛋和青菜。\\n3. 加入面条与酱油翻炒至热透。"},
+{category:"汤类",name:"玉米鸡汤",base:4,ingredients:[["鸡肉",400,"克"],["玉米",2,"根"],["胡萝卜",1,"根"],["水",1500,"毫升"],["盐","适量",""]],steps:"1. 鸡肉和蔬菜洗净切块。\\n2. 加水煮沸后转小火煮至鸡肉熟透。\\n3. 依口味加盐。"},
+{category:"饮料类",name:"Milo 冰饮",base:1,ingredients:[["Milo 粉",3,"汤匙"],["热水",60,"毫升"],["牛奶",150,"毫升"],["炼奶",1,"茶匙"],["冰块","适量",""]],steps:"1. 用热水把 Milo 粉搅拌溶解。\\n2. 按口味加入牛奶和炼奶。\\n3. 加冰块；少甜可减少炼奶，多浓可适量增加 Milo 粉。"},
+{category:"饮料类",name:"Teh Tarik",base:1,ingredients:[["红茶浓液",120,"毫升"],["牛奶",80,"毫升"],["炼奶",1,"汤匙"]],steps:"1. 冲泡浓红茶。\\n2. 加入牛奶和炼奶。\\n3. 在耐热容器间来回倒茶，注意防烫。"},
+{category:"饺子类",name:"家常水饺",base:20,ingredients:[["饺子皮",20,"张"],["猪肉馅",250,"克"],["白菜",150,"克"],["姜末",1,"茶匙"],["酱油",1,"汤匙"]],steps:"1. 白菜切碎，挤去多余水分。\\n2. 与肉馅、姜末、酱油拌匀。\\n3. 包入饺子皮并封口。\\n4. 水沸后下饺子，煮至馅料彻底熟透。"},
+{category:"小吃类",name:"香煎土豆饼",base:4,ingredients:[["土豆",400,"克"],["鸡蛋",1,"个"],["面粉",40,"克"],["盐",2,"克"],["食用油",20,"毫升"]],steps:"1. 土豆煮熟压成泥。\\n2. 加入鸡蛋、面粉和盐混合。\\n3. 整形成小饼，少油煎至两面金黄并熟透。"}
+];
+const categories=["烘焙类","饭类","面类","汤类","饮料类","饺子类","小吃类","其他"];
+const load=(k,fb)=>{try{return JSON.parse(localStorage.getItem(k))??fb}catch(e){return fb}};
+let recipes=load("familyFoodRecipes",baseRecipes), history=load("familyFoodHistory",[]), category="烘焙类", selected=null, latest=null;
+const $=id=>document.getElementById(id);
+function persist(){localStorage.setItem("familyFoodRecipes",JSON.stringify(recipes));localStorage.setItem("familyFoodHistory",JSON.stringify(history))}
+function renderCategories(){$("categories").innerHTML=categories.map(c=>`<button class="cat ${c===category?"active":""}" data-cat="${c}">${c}</button>`).join("");document.querySelectorAll("[data-cat]").forEach(b=>b.onclick=()=>{category=b.dataset.cat;selected=null;renderCategories();renderRecipes();$("selectedName").textContent="还没选择食谱";$("actualIngredients").style.display="none";$("result").textContent="选择食谱后，这里会显示建议材料、用量和步骤。"})}
+function renderRecipes(){let list=recipes.filter(r=>r.category===category);$("recipes").innerHTML=list.length?list.map(r=>`<button class="recipe ${selected===r.name?"active":""}" data-recipe="${encodeURIComponent(r.name)}"><b>${r.name}</b><small>基础份量：${r.base}</small></button>`).join(""):`<p class="note">这个类别还没有食谱。你可以在下方添加自己的料理。</p>`;document.querySelectorAll("[data-recipe]").forEach(b=>b.onclick=()=>{selected=decodeURIComponent(b.dataset.recipe);$("selectedName").textContent=selected;renderRecipes();$("actualIngredients").style.display="none";$("result").textContent="点击「计算建议用量与步骤」查看建议。"})}
+function makeRecipe(){if(!selected){$("result").textContent="请先选择一个食谱。";return null}const r=recipes.find(x=>x.name===selected);if(!r)return null;let n=Math.max(1,Math.min(100,Number($("servings").value)||r.base)),f=n/r.base;let lines=[`${r.name}｜目标份量：${n}`,`口味：${$("sweet").value}、${$("milk").value}、${$("salt").value}、${$("spice").value}、${$("temp").value}`,"","建议材料："];r.ingredients.forEach(([name,qty,unit])=>lines.push(`• ${name}：${typeof qty==="number"?Math.round(qty*f*100)/100:qty}${unit||""}`));lines.push("","制作步骤：",r.steps||"请补充制作步骤。");const note=$("custom").value.trim();if(note)lines.push("","特别要求：",note);if(["少甜","无糖"].includes($("sweet").value))lines.push("","口味提示：甜味材料可先减少，完成后再按实际口味微调。");if(["少奶","不加奶"].includes($("milk").value))lines.push("奶量提示：减少或省略奶类；若影响面糊或饮品稠度，请少量调整其他液体。");latest={name:r.name,servings:n,details:lines.join("\n"),date:new Date().toLocaleString(),sweet:$("sweet").value,milk:$("milk").value,salt:$("salt").value,spice:$("spice").value,temp:$("temp").value,note};$("result").textContent=latest.details;$("actualIngredients").style.display="block";$("actualInputs").innerHTML=r.ingredients.map(([name,qty,unit],i)=>{let suggested=typeof qty==="number"?Math.round(qty*f*100)/100:qty;return `<div class="actual-row"><span>${String(name).replace(/</g,"&lt;")}</span><input id="actualQty${i}" value="${String(suggested).replace(/"/g,"&quot;")}" aria-label="实际使用量"><em>${String(unit||"").replace(/</g,"&lt;")}</em></div>`}).join("");return latest}
+function renderHistory(){if(!history.length){$("history").innerHTML='<p class="note">还没有记录。生成用量、修改实际用料，再保存本次制作记录。</p>';return}$("history").innerHTML=history.slice().reverse().map((h,idx)=>`<div class="history-item"><b>${h.name}</b> <span class="badge">${h.servings}份</span><p>${h.date}<br>口味：${h.sweet||""}、${h.milk||""}、${h.salt||""}、${h.spice||""}、${h.temp||""}<br>${(h.details||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").slice(0,500)}${(h.details||"").length>500?"…":""}</p><button class="secondary" data-history="${history.length-1-idx}">查看完整记录</button></div>`).join("");document.querySelectorAll("[data-history]").forEach(b=>b.onclick=()=>{const h=history[Number(b.dataset.history)];$("result").textContent=h.details;$("actualIngredients").style.display="block";$("actualInputs").innerHTML=(h.actualIngredients||[]).map((x,i)=>`<div class="actual-row"><span>${x.name}</span><input value="${String(x.amount).replace(/"/g,"&quot;")}" readonly><em>${x.unit||""}</em></div>`).join("")||'<p class="note">这条旧记录没有单独保存实际用量。</p>'})}
+$("makeBtn").onclick=makeRecipe;
+$("saveBtn").onclick=()=>{const h=latest||makeRecipe();if(!h)return;const r=recipes.find(x=>x.name===h.name);h.actualIngredients=(r?r.ingredients:[]).map((it,i)=>({name:it[0],amount:$("actualQty"+i)?$("actualQty"+i).value.trim():"",unit:it[2]||""}));const actualText=h.actualIngredients.map(x=>`• ${x.name}：${x.amount}${x.unit}`).join("\n");history.push({...h,details:h.details+"\n\n本次实际使用量：\n"+actualText,date:new Date().toLocaleString()});persist();renderHistory();$("saveBtn").textContent="已保存 ✓";setTimeout(()=>$("saveBtn").textContent="保存本次制作记录",1200)};
+$("addRecipeBtn").onclick=()=>{const name=$("newName").value.trim(),base=Math.max(1,Number($("newBase").value)||1),cat=$("newCategory").value;if(!name){alert("请填写食谱名称");return}const ingredients=$("newIngredients").value.split("\n").map(s=>s.trim()).filter(Boolean).map(line=>{const p=line.split("|");return[p[0]||"材料",Number(p[1])||p[1]||"适量",p[2]||""]});recipes.push({category:cat,name,base,ingredients,steps:$("newSteps").value.trim()||"请补充制作步骤。"});persist();category=cat;selected=name;renderCategories();renderRecipes();$("selectedName").textContent=name;$("newName").value="";$("newIngredients").value="";$("newSteps").value="";alert("已添加并保存在这台设备上。")};
+$("clearHistoryBtn").onclick=()=>{if(confirm("确定清空全部历史记录吗？建议先备份。")){history=[];persist();renderHistory()}};
+$("exportBtn").onclick=()=>{const blob=new Blob([JSON.stringify({recipes,history},null,2)],{type:"application/json"}),a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="家庭美食厨房备份.json";a.click();URL.revokeObjectURL(a.href)};
+$("importBtn").onclick=()=>$("importFile").click();$("importFile").onchange=async e=>{const f=e.target.files[0];if(!f)return;try{const d=JSON.parse(await f.text());if(Array.isArray(d.recipes))recipes=d.recipes;if(Array.isArray(d.history))history=d.history;persist();renderCategories();renderRecipes();renderHistory();alert("导入成功")}catch(err){alert("文件格式不正确，无法导入")}e.target.value=""};
+renderCategories();renderRecipes();renderHistory();
+</script>
+<script>
+if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./service-worker.js').catch(err => console.log('离线缓存注册失败', err));
+  });
+}
+</script>
+</body></html>

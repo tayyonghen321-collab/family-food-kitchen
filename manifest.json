@@ -1,0 +1,21 @@
+{
+  "id": "./",
+  "name": "家庭美食厨房",
+  "short_name": "美食厨房",
+  "description": "家庭离线食谱、材料计算、实际用料和制作历史记录",
+  "lang": "zh-CN",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#fffaf5",
+  "theme_color": "#fff6ed",
+  "icons": [
+    {
+      "src": "./icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
